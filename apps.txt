@@ -1,0 +1,41 @@
+# window manager stuff
+hyprland-git
+hyprpaper
+waybar
+
+ags
+pulseaudio
+pavucontrol
+gnome
+gdm
+
+# coding stuff
+neovim
+rustc
+cargo
+gcc
+gdb
+alacritty
+python3
+npm
+
+# general application
+firefox-nightly
+spotify
+steam
+discord
+mpv
+thunderbird
+ani-cli
+lutris
+evince
+zoxide
+
+# mandatory stuff
+linux-firmware
+wget
+curl
+yay
+tmux
+base
+xf86-video-intel
