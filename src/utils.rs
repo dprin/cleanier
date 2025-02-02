@@ -1,16 +1,22 @@
 use core::str;
-use std::{ffi::OsStr, fmt::Display, process::Command};
+use std::{ffi::OsStr, io::Error, process::Command};
 
-pub fn run_command(command: impl AsRef<str> + Display + AsRef<OsStr>) -> String {
+#[derive(Debug)]
+pub enum CommandError {
+    Execution(Error),
+    StringConversion(()),
+}
+
+pub fn run_command(command: &[impl AsRef<str> + AsRef<OsStr>]) -> Result<String, CommandError> {
     // TODO: This creates files for some reason. Fix.
+    let mut ret = Command::new(&command[0]);
+    for arg in command.iter().skip(1) {
+        ret.arg(arg);
+    }
 
-    let ret = Command::new("sh")
-        .arg("-c")
-        .arg(format!("{}", &command))
-        .output()
-        .expect(&format!("Failed to run {}", command));
+    let output = ret.output().map_err(|err| CommandError::Execution(err))?;
+    let stringed =
+        str::from_utf8(&output.stdout).map_err(|_| CommandError::StringConversion(()))?;
 
-    str::from_utf8(&ret.stdout)
-        .expect(&format!("Could not convert output of {command} to string").to_string())
-        .to_string()
+    Ok(stringed.to_string())
 }

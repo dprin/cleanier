@@ -18,7 +18,7 @@ fn parse_package(s: &str) -> Result<Package, ()> {
 }
 
 pub fn dependency_query(package: &Package) -> BTreeSet<Package> {
-    let search = run_command(format!("pacman -Qi {}", &package.name));
+    let search = run_command(&["pacman", "-Qi", &package.name]).unwrap();
 
     search
         .split('\n')
@@ -35,7 +35,7 @@ pub fn dependency_query(package: &Package) -> BTreeSet<Package> {
 }
 
 pub fn get_installed_packages() -> BTreeSet<Package> {
-    let command = run_command("pacman -Qe");
+    let command = run_command(&["pacman", "-Qe"]).unwrap();
     let output = command.split('\n');
 
     output
