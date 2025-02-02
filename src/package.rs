@@ -1,26 +1,27 @@
-use std::{marker::PhantomData, str::FromStr};
-
-use crate::manager::Manager;
-
 #[derive(Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Clone)]
-pub struct Package<M> {
+pub struct Package {
     pub name: String,
-    t: PhantomData<M>,
 }
 
-impl<M> Package<M> {
-    pub fn new(name: String) -> Self {
-        Self {
-            name,
-            t: PhantomData::default(),
-        }
+impl Package {
+    pub fn new(name: impl Into<String>) -> Self {
+        Self { name: name.into() }
     }
 }
 
-impl<M: Manager> FromStr for Package<M> {
-    type Err = ();
+pub trait Parseable {
+    fn parse_package(s: &str) -> Result<Package, ()>;
+}
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        M::parse_package(s)
+#[cfg(test)]
+mod tests {
+    use super::Package;
+
+    #[test]
+    fn eq() {
+        let a = Package::new("something");
+        let b = Package::new("something");
+
+        assert!(a == b);
     }
 }

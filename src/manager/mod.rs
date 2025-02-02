@@ -1,56 +1,81 @@
-use crate::package::Package;
 use std::collections::{BTreeMap, BTreeSet};
+
+use crate::package::Package;
 
 pub mod pacman;
 
-#[derive(PartialEq, Eq, Hash, PartialOrd, Ord, Clone)]
-struct DependencyCount<M: Manager>(BTreeSet<Package<M>>, usize);
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+pub enum PackageManager {
+    Pacman,
+}
 
-impl<M: Manager> DependencyCount<M> {
-    fn add(&mut self, other: &Self) {
-        self.1 += other.1;
-        self.0.extend(other.0.clone());
+impl PackageManager {
+    pub fn get_installed_packages(&self) -> BTreeSet<Package> {
+        match self {
+            PackageManager::Pacman => pacman::get_installed_packages(),
+
+            // The main reason to allow this unreachable pattern is for
+            // new implementations of package managers.
+            #[allow(unreachable_patterns)]
+            _ => unimplemented!(),
+        }
+    }
+
+    pub fn dependency_query(&self, package: &Package) -> BTreeSet<Package> {
+        match self {
+            PackageManager::Pacman => pacman::dependency_query(package),
+
+            // The main reason to allow this unreachable pattern is for
+            // new implementations of package managers.
+            #[allow(unreachable_patterns)]
+            _ => unimplemented!(),
+        }
     }
 }
 
-pub trait Manager: Sized + Clone + Ord {
-    fn dependency_query(&self, package: &Package<Self>) -> BTreeSet<Package<Self>>;
-    fn get_installed_packages() -> BTreeSet<Package<Self>>;
-    fn parse_package(s: &str) -> Result<Package<Self>, ()>;
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
+pub struct Collector {
+    manager: PackageManager,
+    dependencies: BTreeMap<Package, BTreeSet<Package>>,
 }
 
-struct Collector<M: Manager> {
-    manager: M,
-    dependencies: BTreeMap<Package<M>, DependencyCount<M>>,
-}
-
-impl<M: Manager> Collector<M> {
-    fn new(manager: M) -> Self {
+impl Collector {
+    pub fn new(manager: PackageManager) -> Self {
         Self {
             manager,
             dependencies: BTreeMap::new(),
         }
     }
 
-    fn system_dependency_graph(&mut self) -> BTreeMap<Package<M>, DependencyCount<M>> {
-        todo!()
+    pub fn system_dependency_graph(&mut self) -> BTreeMap<Package, BTreeSet<Package>> {
+        let packages = self.manager.get_installed_packages();
+
+        for package in packages {
+            self.get_dependencies(package);
+        }
+
+        self.dependencies.clone()
     }
 
-    fn get_dependencies(&mut self, package: Package<M>) -> DependencyCount<M> {
-        let query = self.manager.dependency_query(&package);
-        let mut package_deps = DependencyCount(query.clone(), query.len());
+    pub fn get_dependencies(&mut self, package: Package) -> BTreeSet<Package> {
+        if self.dependencies.contains_key(&package) {
+            return BTreeSet::new();
+        }
 
-        for d in package_deps.0.clone() {
+        // Make sure that there's something for no infinite loops.
+        self.dependencies.insert(package.clone(), BTreeSet::new());
+        let mut package_deps = self.manager.dependency_query(&package);
+
+        for d in package_deps.clone() {
             let extension = match self.dependencies.get(&d) {
                 Some(p) => p.clone(),
                 None => self.get_dependencies(d),
             };
 
-            package_deps.add(&extension);
+            package_deps.extend(extension);
         }
 
-        self.dependencies
-            .insert(package.clone(), package_deps.clone());
+        self.dependencies.insert(package, package_deps.clone());
 
         package_deps
     }

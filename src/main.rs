@@ -1,5 +1,10 @@
 use std::path::Path;
 
+use config::Config;
+use manager::{Collector, PackageManager};
+use package::Package;
+
+mod config;
 mod manager;
 pub mod package;
 mod utils;
@@ -8,26 +13,14 @@ fn main() {
     // TODO: add a default and custom parameter with clap
     let path: &Path = Path::new("./apps.txt");
 
-    // TODO: scan from config
+    // TODO: generate collector from config
+    let _config = Config::read_config(path);
+    let pacman = PackageManager::Pacman;
+    let mut collector: Collector = Collector::new(pacman);
 
-    // let command = run_command("pacman -Qe");
-    // let output = command.split('\n');
-    // let installed: HashSet<Package> = output
-    //     .filter_map(|p| match Package::from_str(p) {
-    //         Ok(p) => Some(p),
-    //         _ => None,
-    //     })
-    //     .collect();
-
-    // let needed: Vec<Package> = fs::read_to_string(path)
-    //     .expect("Could not access file.")
-    //     .split('\n')
-    //     .filter(|s| !s.is_empty() || s.starts_with('#'))
-    //     .filter_map(|s| match Package::from_str(s) {
-    //         Ok(p) => Some(p),
-    //         _ => None,
-    //     })
-    //     .collect();
+    println!("{:#?}", collector.get_dependencies(Package::new("helix")));
+    let dependency_graph = collector.system_dependency_graph();
+    assert!(dependency_graph.iter().is_sorted());
 
     // let mut top_packages: HashMap<Package, usize> = HashMap::new();
 
