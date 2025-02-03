@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use config::Config;
-use manager::{Collector, PackageManager};
+use manager::Collector;
 use package::Package;
 
 mod config;
@@ -11,12 +11,11 @@ mod utils;
 
 fn main() {
     // TODO: add a default and custom parameter with clap
-    let path: &Path = Path::new("./apps.txt");
+    let path: &Path = Path::new("./apps.toml");
 
     // TODO: generate collector from config
-    let _config = Config::read_config(path);
-    let pacman = PackageManager::Pacman;
-    let mut collector: Collector = Collector::new(pacman);
+    let config = Config::read_config(path);
+    let mut collector = Collector::new(config.manager);
 
     println!("{:#?}", collector.get_dependencies(Package::new("helix")));
     let dependency_graph = collector.system_dependency_graph();

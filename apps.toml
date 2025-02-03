@@ -1,0 +1,44 @@
+manager = "pacman"
+
+[apps]
+window_manager = [
+  "hyprland-git",
+  "hyprpaper",
+  "waybar",
+  "ags",
+  "pulseaudio",
+  "pavucontrol",
+  "gnome",
+  "gdm"
+]
+
+general = [
+  "firefox-nightly",
+  "spotify",
+  "steam",
+  "discord",
+  "mpv",
+  "thunderbird",
+  "ani-cli",
+  "lutris",
+  "evince",
+  "alacritty",
+  "zoxide",
+]
+
+required = [
+  "linux-firmware",
+  "wget",
+  "curl",
+  "yay",
+  "tmux",
+  "base",
+  "xf86-video-intel",
+]
+
+
+[apps.programming]
+lsp = ["rust-analyzer"]
+editor = ["helix"]
+compilers = ["gcc", "rustup", "cargo", "rustc", "python3", "npm"]
+debuggers = ["gdb"]
