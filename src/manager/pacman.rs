@@ -2,7 +2,7 @@ use crate::{package::Package, utils::run_command};
 use std::collections::BTreeSet;
 
 fn parse_package(s: &str) -> Result<Package, ()> {
-    let split: Vec<String> = s.split(' ').map(|s| s.to_string()).collect();
+    let split: Vec<&str> = s.split(' ').collect();
 
     match split.len() {
         1 | 2 => {
@@ -10,7 +10,16 @@ fn parse_package(s: &str) -> Result<Package, ()> {
                 return Err(());
             }
 
-            return Ok(Package::new(split[0].clone()));
+            let name: String = split[0]
+                .split_terminator(&['>', '=', '<'])
+                .nth(0)
+                .unwrap() // SAFETY: we know there is at least something in the iterator
+                .to_string();
+
+            if name.contains(".so") {
+                return Err(());
+            }
+            return Ok(Package::new(name));
         }
 
         _ => Err(()),
@@ -18,7 +27,8 @@ fn parse_package(s: &str) -> Result<Package, ()> {
 }
 
 pub fn dependency_query(package: &Package) -> BTreeSet<Package> {
-    let search = run_command(&["pacman", "-Qi", &package.name]).unwrap();
+    let command = format!("pacman -Qi {}", &package.name);
+    let search = run_command(command.as_str()).unwrap();
 
     search
         .split('\n')
@@ -35,7 +45,7 @@ pub fn dependency_query(package: &Package) -> BTreeSet<Package> {
 }
 
 pub fn get_installed_packages() -> BTreeSet<Package> {
-    let command = run_command(&["pacman", "-Qe"]).unwrap();
+    let command = run_command("pacman -Q").unwrap();
     let output = command.split('\n');
 
     output

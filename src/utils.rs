@@ -7,8 +7,12 @@ pub enum CommandError {
     StringConversion,
 }
 
-pub fn run_command(command: &[impl AsRef<str> + AsRef<OsStr>]) -> Result<String, CommandError> {
-    // TODO: This creates files for some reason. Fix.
+pub fn run_command<'a>(
+    command: impl AsRef<str> + AsRef<OsStr> + Into<&'a str>,
+) -> Result<String, CommandError> {
+    let command: &str = command.into();
+    let command: Vec<&str> = command.split(" ").collect();
+
     let mut ret = Command::new(&command[0]);
     for arg in command.iter().skip(1) {
         ret.arg(arg);
