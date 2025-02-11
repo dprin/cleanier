@@ -36,7 +36,6 @@ required = [
   "xf86-video-intel",
 ]
 
-
 [apps.programming]
 lsp = ["rust-analyzer"]
 editor = ["helix"]

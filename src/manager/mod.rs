@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeSet, HashMap, HashSet};
 
 use pbr::ProgressBar;
 
@@ -23,7 +23,7 @@ impl PackageManager {
         }
     }
 
-    pub fn dependency_query(&self, package: &Package) -> BTreeSet<Package> {
+    pub fn dependency_query(&self, package: &Package) -> HashSet<Package> {
         match self {
             PackageManager::Pacman => pacman::dependency_query(package),
 
@@ -35,18 +35,18 @@ impl PackageManager {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord)]
+#[derive(PartialEq, Eq)]
 pub struct Collector {
     manager: PackageManager,
     // todo: comment
-    dependency_map: BTreeMap<Package, BTreeSet<Package>>,
+    dependency_map: HashMap<Package, HashSet<Package>>,
 }
 
 impl Collector {
     pub fn new(manager: PackageManager) -> Self {
         Self {
             manager,
-            dependency_map: BTreeMap::new(),
+            dependency_map: HashMap::new(),
         }
     }
 
@@ -54,7 +54,7 @@ impl Collector {
         self.manager.get_installed_packages()
     }
 
-    pub fn system_dependency_graph(&mut self) -> BTreeMap<Package, BTreeSet<Package>> {
+    pub fn system_dependency_graph(&mut self) -> HashMap<Package, HashSet<Package>> {
         let packages = self.installed_packages();
         let amount = packages.len() as u64;
         let mut pb = ProgressBar::new(amount);
@@ -65,22 +65,16 @@ impl Collector {
         }
 
         pb.finish();
-        let found_packages: BTreeSet<Package> =
-            self.dependency_map.clone().keys().cloned().collect();
-        let diff: BTreeSet<_> = found_packages.difference(&packages).collect();
-
-        dbg!(diff);
-
         self.dependency_map.clone()
     }
 
-    pub fn dependencies(&mut self, package: &Package) -> BTreeSet<Package> {
+    pub fn dependencies(&mut self, package: &Package) -> HashSet<Package> {
         if self.dependency_map.contains_key(&package) {
-            return BTreeSet::new();
+            return HashSet::new();
         }
 
         // Make sure that there's something for no infinite loops.
-        self.dependency_map.insert(package.clone(), BTreeSet::new());
+        self.dependency_map.insert(package.clone(), HashSet::new());
         let mut package_deps = self.manager.dependency_query(&package);
 
         for d in package_deps.clone() {
@@ -91,6 +85,9 @@ impl Collector {
 
             package_deps.extend(extension);
         }
+        // insert the package itself as technically the package itself is also
+        // its own dependency
+        package_deps.insert(package.clone());
 
         self.dependency_map
             .insert(package.clone(), package_deps.clone());

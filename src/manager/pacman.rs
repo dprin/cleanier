@@ -1,5 +1,5 @@
 use crate::{package::Package, utils::run_command};
-use std::collections::BTreeSet;
+use std::collections::{BTreeSet, HashSet};
 
 fn parse_package(s: &str) -> Result<Package, ()> {
     let split: Vec<&str> = s.split(' ').collect();
@@ -26,7 +26,7 @@ fn parse_package(s: &str) -> Result<Package, ()> {
     }
 }
 
-pub fn dependency_query(package: &Package) -> BTreeSet<Package> {
+pub fn dependency_query(package: &Package) -> HashSet<Package> {
     let command = format!("pacman -Qi {}", &package.name);
     let search = run_command(command.as_str()).unwrap();
 
