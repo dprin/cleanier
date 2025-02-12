@@ -7,12 +7,3 @@ Probably a simple cargo run would make this work for you. You should not be inst
 ```sh
 cargo run
 ```
-
-# TODO
-
-- [x] Use toml file for stuff like settings and app selection
-- [x] Actually display useful info
-- [ ] Use clap
-- [ ] Remove panics/unwraps to handle errors properly
-- [ ] Documentation
-- [ ] Testing
