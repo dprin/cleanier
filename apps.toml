@@ -1,17 +1,6 @@
 manager = "pacman"
 
 [apps]
-window_manager = [
-  "hyprland-git",
-  "hyprpaper",
-  "waybar",
-  "ags",
-  "pulseaudio",
-  "pavucontrol",
-  "gnome",
-  "gdm"
-]
-
 general = [
   "firefox-nightly",
   "spotify",
@@ -36,8 +25,15 @@ required = [
   "xf86-video-intel",
 ]
 
+[apps.window_manager]
+hyprland = [ "hyprland-git", "hyprshot", "hyprpaper" ]
+accessories = [ "waybar" ]
+backup = [ "gnome" ]
+other = [ "gdm", "pulseaudio", "pavucontrol" ]
+
+
 [apps.programming]
 lsp = ["rust-analyzer"]
 editor = ["helix"]
-compilers = ["gcc", "rustup", "cargo", "rustc", "python3", "npm"]
+compilers = ["gcc", "g++", "rustup", "cargo", "rustc", "python3", "npm", "zig"]
 debuggers = ["gdb"]
